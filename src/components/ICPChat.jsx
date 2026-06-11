@@ -240,13 +240,13 @@ export default function ICPChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={STAGE_QUESTIONS[stage]?.placeholder || 'Type your answer...'}
-              disabled={loading}
+              disabled={loading || attempt > 2}
               rows={3}
               className="flex-1 bg-bubble text-offwhite text-sm rounded-xl px-4 py-3 resize-none border border-[#2a2a2a] focus:border-midgrey focus:outline-none placeholder:text-midgrey disabled:opacity-50"
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || loading}
+              disabled={!input.trim() || loading || attempt > 2}
               className="px-5 py-3 bg-yellow text-ink font-black text-sm rounded-xl disabled:opacity-40 hover:bg-[#c9ce1a] transition-colors self-end"
             >
               Send
