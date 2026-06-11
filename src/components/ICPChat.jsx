@@ -59,6 +59,12 @@ export default function ICPChat() {
 
     if (attempt === 1) setFirstAnswer(text)
 
+    // After 2 challenges, the third submission always advances
+    if (attempt > 2) {
+      advanceStage(text)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -83,33 +89,13 @@ export default function ICPChat() {
       }
 
       if (data.isAdvance) {
-        // Record the answer for this stage
-        const stageAnswer = { stage, text: attempt === 1 ? text : text }
-        const newAnswers = [...answers, stageAnswer]
-        setAnswers(newAnswers)
-
-        // Show the acknowledgement
         if (data.reply) {
           addMessage({ id: Date.now(), role: 'ai', text: data.reply, isChallenge: false })
         }
-
-        if (stage < TOTAL_STAGES - 1) {
-          const nextStage = stage + 1
-          setStage(nextStage)
-          setAttempt(1)
-          setFirstAnswer('')
-          addMessage({
-            id: Date.now() + 1,
-            role: 'ai',
-            text: STAGE_QUESTIONS[nextStage].question,
-            isChallenge: false
-          })
-        } else {
-          await generateResult(newAnswers)
-        }
+        advanceStage(text)
       } else {
         const nextAttempt = attempt + 1
-        addMessage({ id: Date.now(), role: 'ai', text: data.reply, isChallenge: true, attemptNum: attempt })
+        addMessage({ id: Date.now(), role: 'ai', text: data.reply, isChallenge: true })
         setAttempt(nextAttempt)
       }
     } catch {
@@ -120,8 +106,7 @@ export default function ICPChat() {
     inputRef.current?.focus()
   }
 
-  function handleMoveOn() {
-    const text = firstAnswer || '[skipped]'
+  function advanceStage(text) {
     const stageAnswer = { stage, text }
     const newAnswers = [...answers, stageAnswer]
     setAnswers(newAnswers)
@@ -140,6 +125,10 @@ export default function ICPChat() {
     } else {
       generateResult(newAnswers)
     }
+  }
+
+  function handleMoveOn() {
+    advanceStage(firstAnswer || '[skipped]')
   }
 
   async function generateResult(finalAnswers) {
@@ -240,13 +229,13 @@ export default function ICPChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={STAGE_QUESTIONS[stage]?.placeholder || 'Type your answer...'}
-              disabled={loading || attempt > 2}
+              disabled={loading}
               rows={3}
               className="flex-1 bg-bubble text-offwhite text-sm rounded-xl px-4 py-3 resize-none border border-[#2a2a2a] focus:border-midgrey focus:outline-none placeholder:text-midgrey disabled:opacity-50"
             />
             <button
               onClick={handleSend}
-              disabled={!input.trim() || loading || attempt > 2}
+              disabled={!input.trim() || loading}
               className="px-5 py-3 bg-yellow text-ink font-black text-sm rounded-xl disabled:opacity-40 hover:bg-[#c9ce1a] transition-colors self-end"
             >
               Send
