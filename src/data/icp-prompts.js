@@ -221,7 +221,7 @@ const STAGE_PROMPTS = [
   { a1: S4_ATTEMPT1, a2: S4_ATTEMPT2 }
 ];
 
-module.exports = {
+export {
   STAGE_QUESTIONS,
   STAGE_PROMPTS,
   RESULT_PROMPT
