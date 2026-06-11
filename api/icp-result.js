@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { RESULT_PROMPT } from '../src/data/icp-prompts.js'
 import { supabase } from './_supabase.js'
+import { getResultExamples, buildResultContext } from './_examples.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -21,11 +22,16 @@ export default async function handler(req, res) {
     ...answers.map((a, i) => `Stage ${i + 1} answer: ${a.text}`)
   ].join('\n')
 
+  // Inject real examples if we have enough data
+  const examples = await getResultExamples(disc)
+  const exampleContext = buildResultContext(examples)
+  const systemPrompt = exampleContext ? RESULT_PROMPT + exampleContext : RESULT_PROMPT
+
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-5',
       max_tokens: 1024,
-      system: RESULT_PROMPT,
+      system: systemPrompt,
       messages: [{ role: 'user', content: userContent }]
     })
 
@@ -39,7 +45,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to parse JSON from model', raw })
     }
 
-    // Log completed session anonymously
+    // Log completed session
     const { error: dbError } = await supabase.from('icp_results').insert({
       session_id: session_id || 'unknown',
       discipline: disc || null,

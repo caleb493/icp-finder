@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { STAGE_PROMPTS } from '../src/data/icp-prompts.js'
 import { supabase } from './_supabase.js'
+import { getChallengeExamples, buildChallengeContext } from './_examples.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -24,7 +25,12 @@ export default async function handler(req, res) {
   }
 
   const prompts = STAGE_PROMPTS[stage]
-  const systemPrompt = attempt === 1 ? prompts.a1 : prompts.a2
+  const basePrompt = attempt === 1 ? prompts.a1 : prompts.a2
+
+  // Inject real examples if we have enough data
+  const examples = await getChallengeExamples(stage, disc)
+  const exampleContext = buildChallengeContext(examples)
+  const systemPrompt = exampleContext ? basePrompt + exampleContext : basePrompt
 
   const userContent = attempt === 1
     ? `Discipline: ${disc || 'performance coaching'}\n\nAnswer: ${latest_answer}`
@@ -56,13 +62,14 @@ export default async function handler(req, res) {
       }
     }
 
-    // Log answer anonymously — fire and forget, never block the response
+    // Log answer with advance signal — fire and forget
     supabase.from('icp_answers').insert({
       session_id: session_id || 'unknown',
       discipline: disc || null,
       stage,
       attempt,
-      answer: latest_answer
+      answer: latest_answer,
+      is_advance: isAdvance
     }).then(() => {}).catch(() => {})
 
     return res.status(200).json({ reply, isAdvance })
