@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { STAGE_PROMPTS } from '../src/data/icp-prompts.js'
+import { supabase } from './_supabase.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -8,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { stage, attempt, disc, first_answer, latest_answer } = req.body
+  const { stage, attempt, disc, first_answer, latest_answer, session_id } = req.body
 
   if (stage === undefined || attempt === undefined || !latest_answer) {
     return res.status(400).json({ error: 'Missing required fields: stage, attempt, latest_answer' })
@@ -39,21 +40,32 @@ export default async function handler(req, res) {
 
     const rawReply = message.content[0].text.trim()
 
-    // ADVANCE is only a valid signal on attempt 2.
-    // On attempt 1, ignore any ADVANCE and treat the full response as a challenge.
+    let reply, isAdvance
+
     if (attempt === 1) {
-      const cleaned = rawReply.replace(/^ADVANCE\s*/i, '').trim()
-      return res.status(200).json({ reply: cleaned, isAdvance: false })
+      reply = rawReply.replace(/^ADVANCE\s*/i, '').trim()
+      isAdvance = false
+    } else {
+      const advanceMatch = rawReply.match(/^ADVANCE\s*\n([\s\S]*)/i)
+      if (advanceMatch) {
+        reply = advanceMatch[1].trim()
+        isAdvance = true
+      } else {
+        reply = rawReply
+        isAdvance = false
+      }
     }
 
-    // Attempt 2: check for ADVANCE on its own line at the start
-    const advanceMatch = rawReply.match(/^ADVANCE\s*\n([\s\S]*)/i)
-    if (advanceMatch) {
-      const acknowledgement = advanceMatch[1].trim()
-      return res.status(200).json({ reply: acknowledgement, isAdvance: true })
-    }
+    // Log answer anonymously — fire and forget, never block the response
+    supabase.from('icp_answers').insert({
+      session_id: session_id || 'unknown',
+      discipline: disc || null,
+      stage,
+      attempt,
+      answer: latest_answer
+    }).then(() => {}).catch(() => {})
 
-    return res.status(200).json({ reply: rawReply, isAdvance: false })
+    return res.status(200).json({ reply, isAdvance })
   } catch (err) {
     console.error('icp-challenge error:', err)
     return res.status(500).json({ error: 'API call failed', detail: err.message })

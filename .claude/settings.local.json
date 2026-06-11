@@ -8,7 +8,9 @@
       "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\test\")",
       "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\public\")",
       "PowerShell($env:PATH = $env:PATH + \";C:\\\\Program Files\\\\nodejs\"; node --version; npm --version)",
-      "PowerShell(node --version)"
+      "PowerShell(node --version)",
+      "PowerShell(git config user.name)",
+      "PowerShell(git config user.email)"
     ]
   }
 }

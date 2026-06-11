@@ -24,6 +24,7 @@ function useScrollToBottom(dep) {
 }
 
 export default function ICPChat() {
+  const [sessionId] = useState(() => crypto.randomUUID())
   const [disc, setDisc] = useState('')
   const [stage, setStage] = useState(0)
   const [attempt, setAttempt] = useState(1)
@@ -82,7 +83,8 @@ export default function ICPChat() {
           attempt,
           disc,
           first_answer: currentFirstAnswer,
-          latest_answer: text
+          latest_answer: text,
+          session_id: sessionId
         })
       })
 
@@ -151,7 +153,7 @@ export default function ICPChat() {
       const res = await fetch('/api/icp-result', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ disc, answers: finalAnswers })
+        body: JSON.stringify({ disc, answers: finalAnswers, session_id: sessionId })
       })
       const data = await res.json()
       if (res.ok) {

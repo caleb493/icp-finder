@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { RESULT_PROMPT } from '../src/data/icp-prompts.js'
+import { supabase } from './_supabase.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -8,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { disc, answers } = req.body
+  const { disc, answers, session_id } = req.body
 
   if (!answers || answers.length < 4) {
     return res.status(400).json({ error: 'answers array with 4 entries required' })
@@ -29,8 +30,6 @@ export default async function handler(req, res) {
     })
 
     const raw = message.content[0].text.trim()
-
-    // Strip any markdown code fences the model might add
     const jsonText = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
 
     let profile
@@ -39,6 +38,13 @@ export default async function handler(req, res) {
     } catch {
       return res.status(500).json({ error: 'Failed to parse JSON from model', raw })
     }
+
+    // Log completed session anonymously — fire and forget
+    supabase.from('icp_results').insert({
+      session_id: session_id || 'unknown',
+      discipline: disc || null,
+      profile
+    }).then(() => {}).catch(() => {})
 
     return res.status(200).json(profile)
   } catch (err) {
