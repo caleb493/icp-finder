@@ -7,6 +7,12 @@ import { STAGE_QUESTIONS } from '../data/icp-prompts'
 
 const TOTAL_STAGES = 4
 
+const STAGE_TRANSITIONS = [
+  'Stage 1 done. You have named who you work with. Now tell me about the problem they bring to you.',
+  'Stage 2 done. You have named the problem. Now let\'s find your edge.',
+  'Stage 3 done. You have your edge. One more stage. Tell me about your best client engagement.'
+]
+
 function useScrollToBottom(dep) {
   const ref = useRef(null)
   useEffect(() => {
@@ -118,6 +124,12 @@ export default function ICPChat() {
       setFirstAnswer('')
       addMessage({
         id: Date.now(),
+        role: 'ai',
+        text: STAGE_TRANSITIONS[stage],
+        isChallenge: false
+      })
+      addMessage({
+        id: Date.now() + 1,
         role: 'ai',
         text: STAGE_QUESTIONS[nextStage].question,
         isChallenge: false
