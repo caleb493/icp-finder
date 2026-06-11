@@ -1,0 +1,27 @@
+{
+  "name": "icp-finder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:api": "node server.js",
+    "dev:ui": "vite",
+    "dev": "node -e \"const {spawn}=require('child_process');spawn('node',['server.js'],{stdio:'inherit',shell:true});spawn('npx',['vite'],{stdio:'inherit',shell:true})\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:challenge": "node test/challenge.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "dotenv": "^16.4.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "vite": "^5.4.11"
+  }
+}

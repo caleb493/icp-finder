@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Copy-Item \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\icp-prompts \\(1\\).js\" \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\src\\\\data\\\\icp-prompts.js\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\src\\\\data\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\src\\\\components\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\api\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\test\")",
+      "PowerShell(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\Adamas5\\\\Desktop\\\\icp-finder\\\\public\")",
+      "PowerShell($env:PATH = $env:PATH + \";C:\\\\Program Files\\\\nodejs\"; node --version; npm --version)",
+      "PowerShell(node --version)"
+    ]
+  }
+}
