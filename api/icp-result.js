@@ -39,12 +39,12 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to parse JSON from model', raw })
     }
 
-    // Log completed session anonymously — fire and forget
-    supabase.from('icp_results').insert({
+    // Log completed session anonymously — awaited so Vercel doesn't cut it off
+    await supabase.from('icp_results').insert({
       session_id: session_id || 'unknown',
       discipline: disc || null,
       profile
-    }).then(() => {}).catch(() => {})
+    })
 
     return res.status(200).json(profile)
   } catch (err) {
